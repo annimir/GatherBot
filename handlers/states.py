@@ -1,6 +1,10 @@
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import ContextTypes, ConversationHandler, Application
 from .keyboards import get_main_keyboard, BACK_TO_MENU, add_game
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 # Состояния для создания игры
 GAME_TITLE, GAME_DATE, GAME_LOCATION, GAME_PLAYERS = range(4)
@@ -60,8 +64,10 @@ async def process_game_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return ConversationHandler.END
     
-    # Простая валидация формата даты
-    if not any(char in game_date for char in ['.', '-', ':']):
+    # Проверяем формат даты
+    try:
+        datetime.strptime(game_date, "%d.%m.%Y %H:%M")
+    except ValueError:
         await update.message.reply_text(
             "❌ Неверный формат даты!\n"
             "Используйте: ДД.ММ.ГГГГ ЧЧ:ММ\n"
@@ -127,6 +133,20 @@ async def process_game_players(update: Update, context: ContextTypes.DEFAULT_TYP
     
     max_players = int(players_input)
     
+    if max_players < 2:
+        await update.message.reply_text(
+            "❌ Минимальное количество игроков - 2!\n"
+            "Введите число больше 1:"
+        )
+        return GAME_PLAYERS
+    
+    if max_players > 20:
+        await update.message.reply_text(
+            "❌ Максимальное количество игроков - 20!\n"
+            "Введите число до 20:"
+        )
+        return GAME_PLAYERS
+    
     # Получаем данные игры
     game_data = context.user_data.get('game_data', {})
     
@@ -138,47 +158,43 @@ async def process_game_players(update: Update, context: ContextTypes.DEFAULT_TYP
         )
         return ConversationHandler.END
     
-    # Формируем полные данные игры
-    full_game_data = {
-        'title': game_data.get('title', 'Без названия'),
-        'date': game_data.get('date', 'Не указано'),
-        'location': game_data.get('location', 'Не указано'),
+    # Получаем application из контекста
+    application = context.application
+    
+    # Добавляем игру
+    full_game_data = add_game({
+        'title': game_data.get('title'),
+        'date': game_data.get('date'),
+        'location': game_data.get('location'),
         'max_players': max_players,
-        'creator': game_data.get('creator', 'Аноним'),
-        'creator_id': game_data.get('creator_id'),
-        'players': [game_data.get('creator', 'Аноним')],  # Создатель сразу участник
-        'player_ids': [game_data.get('creator_id')],
-        'confirmed': False
-    }
+        'creator': game_data.get('creator'),
+        'creator_id': game_data.get('creator_id')
+    }, application)
     
-    # Сохраняем игру
-    add_game(full_game_data)
+    # Очищаем временные данные
+    context.user_data.pop('game_data', None)
     
-    # Формируем сообщение об успешном создании
-    success_message = (
-        "🎉 <b>Игра успешно создана!</b>\n\n"
+    await update.message.reply_text(
+        f"🎉 <b>Игра успешно создана!</b>\n\n"
         f"🎮 <b>Название:</b> {full_game_data['title']}\n"
         f"📅 <b>Дата и время:</b> {full_game_data['date']}\n"
         f"📍 <b>Место:</b> {full_game_data['location']}\n"
         f"👥 <b>Макс. игроков:</b> {full_game_data['max_players']}\n"
-        f"👤 <b>Создатель:</b> {full_game_data['creator']}\n\n"
+        f"👤 <b>Создатель:</b> {full_game_data['creator']}\n"
+        f"🆔 <b>ID игры:</b> {full_game_data['id']}\n\n"
         
-        "📢 <b>Теперь вы можете:</b>\n"
-        "1. Поделиться этой игрой с друзьями\n"
-        "2. Следить за набором участников\n"
-        "3. Когда наберется достаточно игроков, игра станет 'Подтвержденной'\n\n"
+        f"📢 <b>Теперь другие игроки могут войти в вашу игру!</b>\n\n"
         
-        "👇 Используйте кнопки для дальнейших действий:"
-    )
-    
-    await update.message.reply_text(
-        success_message,
+        f"ℹ️ <b>Правила:</b>\n"
+        f"• Игроки могут входить/выходить из игры\n"
+        f"• Когда все места будут заняты, все получат уведомление\n"
+        f"• За час до начала, если все на месте, игра подтверждается\n"
+        f"• За час до начала вход/выход/удаление становятся невозможны\n\n"
+        
+        f"👇 Используйте кнопки для управления игрой:",
         parse_mode='HTML',
         reply_markup=get_main_keyboard()
     )
-    
-    # Очищаем временные данные
-    context.user_data.pop('game_data', None)
     
     return ConversationHandler.END
 

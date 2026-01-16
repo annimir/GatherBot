@@ -28,7 +28,6 @@ def create_application() -> Application:
     return application
 
 # Глобальная переменная application
-application = create_application()
 users = {}
 users_language = {}
 user_chat_ids = set()
