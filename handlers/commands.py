@@ -1,34 +1,80 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from config.bot import user_chat_ids, users_language, users
+from .keyboards import get_main_keyboard
 
-from messages.messagePath import start_message
-
-from messages.message import message, default_language
-
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user_chat_ids.add(chat_id)
-    if not (chat_id in users_language):
-        users_language[chat_id] = default_language
-    await update.message.reply_text(
-        message(users_language[chat_id], start_message, 'start', update.effective_user.first_name), 
-        parse_mode='HTML')
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /help"""
-    help_text = """
-    Доступные команды:
-    /start - Начать работу
-    /help - Получить справку
-    /echo [текст] - Эхо-ответ
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
-    await update.message.reply_text(help_text)
+    Обработчик команды /start
+    Выводит стартовое сообщение и главное меню с кнопками
+    """
+    user = update.effective_user
+    
+    start_message = (
+        f"👋 <b>Привет, {user.first_name}!</b>\n\n"
+        "🎲 Добро пожаловать в <b>GatherBot</b> — вашего помощника "
+        "в организации настольных игр!\n\n"
+        
+        "✨ <b>Что я умею:</b>\n"
+        "• 🎮 <i>Создавать игровые встречи</i>\n"
+        "• 👥 <i>Управлять списками участников</i>\n"
+        "• 📅 <i>Планировать время и место</i>\n"
+        "• ✅ <i>Подтверждать участие игроков</i>\n\n"
+        
+        "👇 <b>Выберите действие с помощью кнопок ниже:</b>"
+    )
+    
+    await update.message.reply_text(
+        text=start_message,
+        parse_mode='HTML',
+        reply_markup=get_main_keyboard()
+    )
+    
+    # Сохраняем информацию о пользователе
+    context.user_data['user_id'] = user.id
+    context.user_data['first_name'] = user.first_name
+    context.user_data['username'] = user.username or "Без username"
 
-async def echo_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /echo"""
-    if context.args:
-        text = ' '.join(context.args)
-        await update.message.reply_text(f"Вы сказали: {text}")
-    else:
-        await update.message.reply_text("Напишите: /echo [ваш текст]")
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    Обработчик команды /help
+    Показывает справку по использованию бота
+    """
+    help_text = (
+        "📚 <b>Справка по GatherBot</b>\n\n"
+        
+        "<b>Основные кнопки:</b>\n"
+        "🎮 <b>Создать игру</b> — организовать новую встречу\n"
+        "📋 <b>Список игр</b> — посмотреть активные игры\n"
+        "✅ <b>Подтвержденные игры</b> — игры с достаточным количеством участников\n\n"
+        
+        "<b>Команды:</b>\n"
+        "/start — Начало работы, показывает кнопки\n"
+        "/help — Эта справка\n"
+        "/menu — Показать меню с кнопками\n\n"
+        
+        "<b>Как это работает:</b>\n"
+        "1. Создайте игру, указав название, время и место\n"
+        "2. Другие пользователи могут присоединиться\n"
+        "3. Когда набирается достаточно участников, игра подтверждается\n"
+        "4. Все участники получают уведомления\n\n"
+        
+        "<b>Поддержка:</b>\n"
+        "По вопросам и предложениям обращайтесь к @annimir"
+    )
+    
+    await update.message.reply_text(
+        text=help_text,
+        parse_mode='HTML',
+        reply_markup=get_main_keyboard()
+    )
+
+async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    Обработчик команды /menu
+    Показывает главное меню с кнопками
+    """
+    await update.message.reply_text(
+        text="📱 <b>Главное меню</b>\n\nВыберите действие:",
+        parse_mode='HTML',
+        reply_markup=get_main_keyboard()
+    )
