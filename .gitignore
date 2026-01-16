@@ -1,0 +1,163 @@
+# Виртуальные окружения
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+venv*/
+
+# Питон
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# IDE и редакторы
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-*
+
+# БД и кэш
+*.db
+*.sqlite
+*.sqlite3
+*.cache
+.pytest_cache/
+.mypy_cache/
+
+# Операционные системы
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Файлы окружения
+.env
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.secrets
+secrets.ini
+config.ini
+config.yaml
+
+# Логи
+*.log
+logs/
+
+# Папки пользователей
+instance/
+
+# Пип
+pip-delete-this-directory.txt
+pip-log.txt
+
+# Единичные тестовые запуски
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Распространяемые файлы
+share/python-wheels/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.coverage
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+.mypy_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Sphinx documentation
+docs/_build/
+
+# Документация от pdoc
+docs/_build/
+
+# Для Telegram бота (дополнительно)
+# Session files
+*.session
+# Фото/медиа загрузки
+downloads/
+uploads/
+temp/
+tmp/
+# Конфигурации сервера
+*.pem
+*.key
+*.crt
